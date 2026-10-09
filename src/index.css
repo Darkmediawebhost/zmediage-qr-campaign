@@ -1,0 +1,95 @@
+@import "tailwindcss";
+@source not "./components";
+
+@font-face {
+  font-family: "Clash Display";
+  src: url("/fonts/ClashDisplay-Variable.woff2") format("woff2");
+  font-weight: 200 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Satoshi";
+  src: url("/fonts/Satoshi-Variable.woff2") format("woff2");
+  font-weight: 300 900;
+  font-display: swap;
+}
+
+@theme {
+  --color-ink: #07060c;
+  --color-panel: #110e1c;
+  --color-line: rgb(255 255 255 / 0.1);
+  --color-muted: #a39fb4;
+  --color-violet-glow: #a78bfa;
+  --font-display: "Clash Display", system-ui, sans-serif;
+  --font-sans: "Satoshi", system-ui, sans-serif;
+}
+
+@layer base {
+  html,
+  body {
+    background: var(--color-ink);
+    color: #f5f3ff;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
+  }
+  ::selection {
+    background: #6d28d9;
+    color: #fff;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    text-wrap: balance;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(100deg, #e9d5ff 0%, #a78bfa 45%, #7c3aed 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .grain {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+  }
+  .pb-safe {
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+  }
+}
+
+@keyframes drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(6%, -4%, 0) scale(1.12); }
+}
+@keyframes drift-rev {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1.05); }
+  50% { transform: translate3d(-8%, 5%, 0) scale(0.95); }
+}
+@keyframes shimmer {
+  to { transform: translateX(220%); }
+}
+.animate-drift { animation: drift 14s ease-in-out infinite; }
+.animate-drift-rev { animation: drift-rev 18s ease-in-out infinite; }
+.btn-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 -60%;
+  width: 45%;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.28), transparent);
+  transform: translateX(0) skewX(-20deg);
+  animation: shimmer 2.8s ease-in-out infinite 1s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-drift,
+  .animate-drift-rev,
+  .btn-shimmer::after {
+    animation: none !important;
+  }
+}

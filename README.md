@@ -20,7 +20,7 @@ There's no gift and no game. All text lives in `src/config/campaign.ts`, and car
 
 ## The QR (print/)
 
-`print/qr-b.svg` is a plain QR with the Z logo in the centre. It opens **https://zmediage.vercel.app** with no path and no text. Regenerate with `npm run qr`, or with `QR_URL=https://zmediage.com npm run qr` if the domain changes. It uses error-correction H and has a 4-module white border. It's decode-tested from 200 px to 1200 px. At about 35 cm wide on the box it scans from a couple of metres.
+`print/qr-b.svg` is a plain QR with the Z logo in the centre. It opens **https://campaign.zmediage.online/** with no extra path and no text. Regenerate with `npm run qr`, or with `QR_URL=https://example.com npm run qr` if the URL changes. It uses error-correction H and has a 4-module white border. It's decode-tested from 200 px to 1200 px. At about 35 cm wide on the box it scans from a couple of metres.
 
 **Print notes:** matte vinyl or card, not gloss (mall lights glare). Test-scan the printer's proof with an older Android phone before the full run.
 

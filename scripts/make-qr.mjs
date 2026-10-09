@@ -1,10 +1,10 @@
-// Builds the campaign QR: print/qr-b.svg → https://zmediage.vercel.app (no path, no text).
+// Builds the campaign QR: print/qr-b.svg → https://campaign.zmediage.online/ (no extra path, no text).
 //   npm run qr
-//   QR_URL=https://zmediage.com npm run qr   → after moving to the real domain
+//   QR_URL=https://example.com npm run qr   → override the encoded URL
 import QRCode from 'qrcode';
 import { mkdirSync, writeFileSync } from 'node:fs';
 
-const URL_ = process.env.QR_URL || 'https://zmediage.vercel.app';
+const URL_ = process.env.QR_URL || 'https://campaign.zmediage.online/';
 const OUT = new URL('../print/', import.meta.url);
 mkdirSync(OUT, { recursive: true });
 

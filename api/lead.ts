@@ -1,10 +1,13 @@
 // Vercel Function: POST /api/lead
-// Delivery targets are all optional and env-gated (see .env.example):
-//   LEAD_SHEET_WEBHOOK  Google Apps Script web-app URL; appends a row to the team sheet
+// The Google Sheet is always posted to SHEET_WEBHOOK (Apps Script web app, doPost).
+// Email is optional and env-gated (see .env.example):
 //   RESEND_API_KEY      emails each enquiry to LEAD_NOTIFY_TO
 //   LEAD_FROM           verified Resend sender; also turns on a short "thanks, here's who we are" reply
 // A lead counts as delivered when the sheet or the team email succeeds. Otherwise we return 503
 // and the page falls back to WhatsApp so the enquiry isn't lost.
+
+const SHEET_WEBHOOK =
+  'https://script.google.com/macros/s/AKfycbzaVa1OWh3s0zkv2Vb7d-mh-s4XK4qbPrvOYuOtPuuICqbHnAgTdtOZXVOGCMasaTDKaw/exec';
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const NEEDS = new Set(['Branding', 'Website', 'Social media', 'Ads', 'Not sure yet']);
@@ -48,18 +51,8 @@ export async function POST(request: Request) {
     return Response.json({ ok: false, error: 'Add a WhatsApp number or email so we can reach you.' }, { status: 422 });
 
   const env = process.env;
-  const jobs: Promise<unknown>[] = [];
-  if (env.LEAD_SHEET_WEBHOOK) jobs.push(postSheet(env.LEAD_SHEET_WEBHOOK, lead));
+  const jobs: Promise<unknown>[] = [postSheet(SHEET_WEBHOOK, lead)];
   if (env.RESEND_API_KEY) jobs.push(notifyTeam(env.RESEND_API_KEY, lead));
-
-  if (jobs.length === 0) {
-    if (env.VERCEL_ENV === 'production') {
-      console.error('[lead] no delivery target configured', lead.name);
-      return Response.json({ ok: false, error: 'Not configured' }, { status: 503 });
-    }
-    console.log('[lead] (dev, not delivered)', lead);
-    return Response.json({ ok: true, dev: true });
-  }
 
   const results = await Promise.allSettled(jobs);
   results.forEach((r) => r.status === 'rejected' && console.error('[lead] delivery failed', r.reason));
@@ -74,12 +67,22 @@ export async function POST(request: Request) {
 }
 
 async function postSheet(url: string, lead: Lead) {
+  // script.google.com answers 302. The POST already ran doPost; the redirect must be read with GET.
+  // Following it as another POST returns 405, and a normal redirect follow can call doGet instead.
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'content-type': 'text/plain;charset=utf-8' }, // Apps Script rejects JSON preflights
     body: JSON.stringify(lead),
-    redirect: 'follow',
+    redirect: 'manual',
   });
+  if (res.status >= 300 && res.status < 400) {
+    const next = res.headers.get('location');
+    if (!next) throw new Error('sheet redirect without location');
+    const followed = await fetch(next, { method: 'GET', redirect: 'follow' });
+    const text = (await followed.text()).trim();
+    if (!followed.ok || text !== 'ok') throw new Error(`sheet ${followed.status}`);
+    return;
+  }
   if (!res.ok) throw new Error(`sheet ${res.status}`);
 }
 

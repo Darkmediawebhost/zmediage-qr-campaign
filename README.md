@@ -31,13 +31,14 @@ There's no gift and no game. All text lives in `src/config/campaign.ts`, and car
 
 ## Lead capture
 
-`api/lead.ts` is a Vercel Function. Set these env vars in Vercel (see `.env.example`):
+`api/lead.ts` is a Vercel Function. Every enquiry is posted straight to the Google Sheet web app (`SHEET_WEBHOOK` in that file). In the sheet, go to Extensions → Apps Script, paste the snippet below, then Deploy → Web app (Execute as *me*, access *Anyone*).
 
-- `LEAD_SHEET_WEBHOOK`: Google Sheet (recommended, the team sees enquiries live). In the sheet, go to Extensions → Apps Script, paste the snippet below, then Deploy → Web app (Execute as *me*, access *Anyone*). Copy the URL here.
+Optional email (see `.env.example`):
+
 - `RESEND_API_KEY` (+ `LEAD_NOTIFY_TO`): an email for every enquiry.
 - `LEAD_FROM`: a verified Resend sender. This turns on a short thank-you reply when someone leaves an email.
 
-With nothing configured, production returns 503 and the page offers "Send it on WhatsApp instead" with the details prefilled, so no enquiry is lost. Locally (`npm run dev`) enquiries are logged to the terminal.
+If the sheet post fails, the page offers "Send it on WhatsApp instead" with the details prefilled, so no enquiry is lost.
 
 ```js
 function doPost(e) {
